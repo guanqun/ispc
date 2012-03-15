@@ -16,7 +16,7 @@ export void D32_A8_Color_ispc(uniform unsigned int32 device[], uniform int dstRB
         foreach (w = 0 ... width) {
             unsigned int8 aa = mask[dstOffset * i + w];
             unsigned int32 dd = device[maskRB * i + w];
-            unsigned int32 x = dd + aa;
+            unsigned int32 x = SkBlendARGB32(pmc, dd, aa);
             device[w] = x;
         }
     }
