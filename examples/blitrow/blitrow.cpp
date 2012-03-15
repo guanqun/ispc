@@ -64,7 +64,7 @@ int main() {
     uint32_t color1 = 0xff55aa33;
 
 ///////////////////////////////////////////////////////////////////////////////
-#if 0
+#if 1
     double minISPC = 1e30;
     for (int i = 0; i < 3; ++i) {
         reset_and_start_timer();
@@ -77,6 +77,7 @@ int main() {
 #endif
 ///////////////////////////////////////////////////////////////////////////////
 
+#if 0
     double minISPC = 1e30;
     for (int i = 0; i < 3; ++i) {
         reset_and_start_timer();
@@ -86,6 +87,7 @@ int main() {
     }
 
     printf("[SkARGB32_A8_BlitMask_SSE2 SSE2]:\t\t[%.3f] million cycles\n", minISPC);
+#endif
 
     // Clear out the buffer
     for (unsigned int i = 0; i < dst_width * dst_height; ++i)

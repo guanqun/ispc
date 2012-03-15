@@ -41,9 +41,11 @@ static inline SkPMColor SkPremultiplyARGBInline(U8CPU a, U8CPU r, U8CPU g, U8CPU
 /** return the blue byte from a SkColor value */
 #define SkColorGetB(color)      (((color) >>  0) & 0xFF)
 
+extern "C" {
 SkPMColor SkPreMultiplyColor(SkColor c) {
     return SkPremultiplyARGBInline(SkColorGetA(c), SkColorGetR(c),
                                    SkColorGetG(c), SkColorGetB(c));
+}
 }
 
 #define SK_RESTRICT
@@ -71,7 +73,7 @@ static inline uint32_t SkAlphaMulQ(uint32_t c, unsigned scale) {
 #define SkGetPackedG32(packed)      ((uint32_t)((packed) << (24 - SK_G32_SHIFT)) >> 24)
 #define SkGetPackedB32(packed)      ((uint32_t)((packed) << (24 - SK_B32_SHIFT)) >> 24)
 
-static inline SkPMColor SkBlendARGB32(SkPMColor src, SkPMColor dst, U8CPU aa) {
+extern SkPMColor SkBlendARGB32(SkPMColor src, SkPMColor dst, U8CPU aa) {
     unsigned src_scale = SkAlpha255To256(aa);
     unsigned dst_scale = SkAlpha255To256(255 - SkAlphaMul(SkGetPackedA32(src), src_scale));
     
