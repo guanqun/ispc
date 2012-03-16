@@ -73,12 +73,14 @@ static inline uint32_t SkAlphaMulQ(uint32_t c, unsigned scale) {
 #define SkGetPackedG32(packed)      ((uint32_t)((packed) << (24 - SK_G32_SHIFT)) >> 24)
 #define SkGetPackedB32(packed)      ((uint32_t)((packed) << (24 - SK_B32_SHIFT)) >> 24)
 
-extern SkPMColor SkBlendARGB32(SkPMColor src, SkPMColor dst, U8CPU aa) {
+extern "C" {
+SkPMColor SkBlendARGB32(SkPMColor src, SkPMColor dst, U8CPU aa) {
     unsigned src_scale = SkAlpha255To256(aa);
     unsigned dst_scale = SkAlpha255To256(255 - SkAlphaMul(SkGetPackedA32(src), src_scale));
     
     return SkAlphaMulQ(src, src_scale) + SkAlphaMulQ(dst, dst_scale);
 }       
+}
 
 void D32_A8_Color(void* dst, size_t dstRB,
                          const void* maskPtr, size_t maskRB,
@@ -218,4 +220,28 @@ void SkARGB32_A8_BlitMask_SSE2(void* device, size_t dstRB, const void* maskPtr,
         dst = (SkPMColor *)((char*)dst + dstOffset);
         mask += maskOffset;
     } while (--height != 0);
+}
+
+SkPMColor SkPMSrcOver(SkPMColor src, SkPMColor dst) {
+    return src + SkAlphaMulQ(dst, SkAlpha255To256(255 - SkGetPackedA32(src)));
+}
+
+extern "C" {
+SkPMColor SkPMSrcOverExternal(SkPMColor src, SkPMColor dst) {
+    return dst;
+    //return src + SkAlphaMulQ(dst, SkAlpha255To256(255 - SkGetPackedA32(src)));
+}
+}
+
+extern void S32A_Opaque_BlitRow32(uint32_t* dst,
+                                  const uint32_t* src,
+                                  int count, unsigned int alpha) {
+    if (count > 0) {
+        do {
+            *dst = SkPMSrcOver(*src, *dst);
+
+            src += 1;
+            dst += 1;
+        } while (--count > 0); 
+    }   
 }

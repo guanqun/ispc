@@ -33,6 +33,8 @@
 
 #include <stdio.h>
 #include <algorithm>
+#include <stdlib.h>
+#include <time.h>
 #include "../timing.h"
 #include "blitrow_ispc.h"
 using namespace ispc;
@@ -49,7 +51,67 @@ extern void D32_A8_Opaque(void* dst, size_t dstRB,
                           const void* maskPtr, size_t maskRB,
                           uint32_t color, int width, int height);
 
+typedef uint32_t SkPMColor;
+typedef unsigned int U8CPU;
+
+extern void S32A_Opaque_BlitRow32(uint32_t* dst,
+                                  const uint32_t* src,
+                                  int count, unsigned int alpha);
+
+uint32_t getrand() {
+    uint32_t result = 0;
+    unsigned char x;
+
+    x = rand() % 256;
+    result |= x;
+    x = rand() % 256;
+    result |= (x << 8);
+    x = rand() % 256;
+    result |= (x << 16);
+    x = rand() % 256;
+    result |= (x << 24);
+
+    return result;
+}
+
+extern SkPMColor SkPMSrcOver(SkPMColor src, SkPMColor dst);
+extern "C" {
+SkPMColor SkPMSrcOverExternal(SkPMColor src, SkPMColor dst);
+}
+
+void test_s32a() {
+    int count = 4;
+    SkPMColor *dst = new SkPMColor[count];
+    SkPMColor *src = new SkPMColor[count];
+    SkPMColor *dst2 = new SkPMColor[count];
+
+    //set random data
+    for (int i = 0; i < count; i++) {
+        dst[i] = getrand();
+        src[i] = getrand();
+
+        dst2[i] = dst[i];
+
+        printf("[%d] 0x%x 0x%x 0x%x 0x%x\n", i, dst[i], dst2[i], src[i], SkPMSrcOverExternal(src[i], dst[i]));
+    }
+
+printf("-----------\n");
+    S32A_Opaque_BlitRow32_ispc(dst2, src, count, 255);
+    S32A_Opaque_BlitRow32(dst, src, count, 255);
+
+    for (int i = 0; i < count; i++) {
+        printf("[%d] 0x%x 0x%x\n", i, dst[i], dst2[i]);
+
+        if (dst[i] != dst2[i]) {
+            fprintf(stderr, "not correct!!! %d\n", i);
+        }
+    }
+
+    fprintf(stderr, "done\n");
+}
+
 int main() {
+    srand(time(NULL));
     int dst_width = 400;
     int dst_height = 400;
     int width = 300;
@@ -64,7 +126,7 @@ int main() {
     uint32_t color1 = 0xff55aa33;
 
 ///////////////////////////////////////////////////////////////////////////////
-#if 1
+#if 0
     double minISPC = 1e30;
     for (int i = 0; i < 3; ++i) {
         reset_and_start_timer();
@@ -94,6 +156,7 @@ int main() {
         buf[i] = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
+#if 0
     double minSerial = 1e30;
     for (int i = 0; i < 3; ++i) {
         reset_and_start_timer();
@@ -103,9 +166,12 @@ int main() {
     }
 
     printf("[D32_A8_Color serial]:\t\t[%.3f] millon cycles\n", minSerial);
+#endif
 ///////////////////////////////////////////////////////////////////////////////
 
-    printf("\t\t\t\t(%.2fx speedup from ISPC)\n", minSerial/minISPC);
+    //printf("\t\t\t\t(%.2fx speedup from ISPC)\n", minSerial/minISPC);
+
+    test_s32a();
 
     return 0;
 }
