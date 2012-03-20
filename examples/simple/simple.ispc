@@ -32,7 +32,7 @@
 */
 
 
-export void simple(uniform float vin[], uniform float vout[], 
+export void simple(uniform float* vin, uniform float vout[], 
                    uniform int count) {
     foreach (index = 0 ... count) {
         // Load the appropriate input value for this program instance.

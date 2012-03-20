@@ -68,6 +68,8 @@ uint32_t getrand() {
     result |= (x << 8);
     x = rand() % 256;
     result |= (x << 16);
+    x = 0xff;
+    x = 0;
     x = rand() % 256;
     result |= (x << 24);
 
@@ -80,11 +82,14 @@ SkPMColor SkPMSrcOverExternal(SkPMColor src, SkPMColor dst);
 }
 
 void test_s32a() {
-    int count = 4;
+    //int count = 10000;
+    int count = 1;
     SkPMColor *dst = new SkPMColor[count];
     SkPMColor *src = new SkPMColor[count];
     SkPMColor *dst2 = new SkPMColor[count];
+    SkPMColor *back = new SkPMColor[count];
 
+#if 0
     //set random data
     for (int i = 0; i < count; i++) {
         dst[i] = getrand();
@@ -92,8 +97,14 @@ void test_s32a() {
 
         dst2[i] = dst[i];
 
-        printf("[%d] 0x%x 0x%x 0x%x 0x%x\n", i, dst[i], dst2[i], src[i], SkPMSrcOverExternal(src[i], dst[i]));
+        back[i] = dst[i];
+        //printf("[%d] 0x%x 0x%x 0x%x 0x%x\n", i, dst[i], dst2[i], src[i], SkPMSrcOver(src[i], dst[i]));
     }
+#else
+    back[0] = dst2[0] = dst[0] = 0x78fcd603;
+    src[0] =  0xa8d051;
+
+#endif
 
 printf("-----------\n");
     S32A_Opaque_BlitRow32_ispc(dst2, src, count, 255);
@@ -103,13 +114,14 @@ printf("-----------\n");
         printf("[%d] 0x%x 0x%x\n", i, dst[i], dst2[i]);
 
         if (dst[i] != dst2[i]) {
-            fprintf(stderr, "not correct!!! %d\n", i);
+            fprintf(stderr, "not correct!!! %d: 0x%0x 0x%0x\n", i, back[i], src[i]);
         }
     }
 
     fprintf(stderr, "done\n");
 }
 
+extern uint32_t SkAlphaMulQ(uint32_t c, unsigned scale);
 int main() {
     srand(time(NULL));
     int dst_width = 400;
@@ -173,5 +185,9 @@ int main() {
 
     test_s32a();
 
+
+    uint32_t x = 0x11111111;
+    unsigned scale = 8;
+    printf("xxxxx: %x\n", SkAlphaMulQ(x, 2));
     return 0;
 }

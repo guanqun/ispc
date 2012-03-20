@@ -60,7 +60,7 @@ static inline unsigned SkAlpha255To256(U8CPU alpha) {
 
 const uint32_t gMask_00FF00FF = 0xFF00FF;
 
-static inline uint32_t SkAlphaMulQ(uint32_t c, unsigned scale) {
+uint32_t SkAlphaMulQ(uint32_t c, unsigned scale) {
     uint32_t mask = gMask_00FF00FF;
 
     uint32_t rb = ((c & mask) * scale) >> 8;
@@ -239,6 +239,7 @@ extern void S32A_Opaque_BlitRow32(uint32_t* dst,
     if (count > 0) {
         do {
             *dst = SkPMSrcOver(*src, *dst);
+            //*dst = SkAlpha255To256(255 - SkGetPackedA32(*src));
 
             src += 1;
             dst += 1;
